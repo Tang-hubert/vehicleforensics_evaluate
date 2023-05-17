@@ -76,7 +76,7 @@ def main():
         with open(f'{path}/ciphertext_en.txt', 'r') as f:
             n = int(f.read())
         
-        # #decrypto
+        # decrypto
         cipher = []
         for j in sm:
             cipher.append(Zx(j)) 
@@ -85,12 +85,8 @@ def main():
 
         with open(f'{path}/result_plaintext.txt', 'w') as f:
             f.write(str(plainTextList))
-
+    
         i += 1
 
 if __name__ == '__main__':
     main()
-
-
-
-    #######　需做ｖｅｒｉｆｙ
