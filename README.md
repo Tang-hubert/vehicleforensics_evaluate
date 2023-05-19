@@ -11,5 +11,6 @@
 
 ## TO DO
 1. Verify the signature.
-2. seperate different txt files into different folders(categories)
-3. add feature for automatically reading mutiple data.
+> 5/20 complete
+2. add feature for automatically reading mutiple data.
+3. seperate different txt files into different folders(categories) -> sort each value into a json file.
