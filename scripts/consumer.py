@@ -1,3 +1,6 @@
+import sys,os
+sys.path.append(os.getcwd())
+
 from hashlib import sha3_256
 import hashlib
 
@@ -87,12 +90,9 @@ def main():
             f.write(str(plainTextList))
     
         # verify
-
-        m_byt = plainTextList.encode()
-
         # hash
         h_o = sha3_256()
-        h_o.update(m_byt)
+        h_o.update(plainTextList[0][0])
         h_byt = h_o.digest()
         with open(f'{path}/signature.txt', 'r') as f:
             s_byt = eval(f.read())
