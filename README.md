@@ -14,3 +14,4 @@
 > 5/20 complete
 2. add feature for automatically reading mutiple data.
 3. seperate different txt files into different folders(categories) -> sort each value into a json file.
+4. add logging library to replace print... and record the result.
