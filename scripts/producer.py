@@ -1,3 +1,6 @@
+import sys,os
+sys.path.append(os.getcwd())
+                
 from hashlib import sha3_256
 import hashlib
 
