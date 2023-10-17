@@ -12,11 +12,11 @@
 ## TO DO
 1. Verify the signature.
 > 5/20 complete
-2. add feature for automatically reading mutiple data.
-3. seperate different txt files into different folders(categories) -> sort each value into a json file.
-4. add logging library to replace print... and record the result.
-
-
-| Column 1 | Column 2 | Column 3 |
-| -------- | -------- | -------- |
-| Text     | Text     | Text     |
+1. add feature for automatically reading mutiple data.
+> 10/17 done
+1. seperate different txt files into different folders(categories)
+> 10/17 done
+1. sort each value into a json file.(reduce the txt files and make all of the information in one)
+1. add logging library to replace print... and record the result.(using `from absl import logging`)
+1. add a for loop for glob
+1. remove processed file. (os.remove(file_path))
