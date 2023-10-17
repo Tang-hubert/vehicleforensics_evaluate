@@ -1,6 +1,10 @@
 import sys,os
 sys.path.append(os.getcwd())
-                
+import glob
+from pathlib import Path
+import datetime
+# from absl import logging
+
 from hashlib import sha3_256
 import hashlib
 
@@ -13,9 +17,8 @@ from ntru_utils.num_to_polynomial import *
 from config import * 
 
 
-TEST_N = 1
+data_path=Path('./data/txt')
 
-path=r'.\data\txt'
 
 class data_encoding():
     def __init__(self):
@@ -68,10 +71,16 @@ class data_encoding():
 def main():
     data_encoing = data_encoding()
 
-    i = 0
+    txt_path = data_path / 'text'
+    txt_files = glob.iglob(os.path.join(txt_path / '*.txt'))
 
-    while i < TEST_N:
-        with open(f'{path}/original.txt', 'r') as f: # 純str
+    for file_path in txt_files:
+        print(file_path)
+        result_dir = Path(data_path, datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S.%f"))
+        print(result_dir)
+        result_dir.mkdir(parents=True, exist_ok=True)
+
+        with open(file_path, 'r') as f: # 純str
             m_str = f.read()
 
         m_byt = m_str.encode()
@@ -84,7 +93,9 @@ def main():
         # sign
         s_byt = data_encoing.CFSK.sign(h_byt)
 
-        with open(f'{path}/signature.txt', 'w') as f:
+        # os.remove(file_path)
+
+        with open(result_dir / 'signature.txt', 'w') as f:
             f.write(str(s_byt))
 
         # encrypt
@@ -96,13 +107,12 @@ def main():
             e_list.append(e_poly.coeffs)
 
 
-        with open(f'{path}/ciphertext_epolys.txt', 'w') as f:
+        with open(result_dir / 'ciphertext_epolys.txt', 'w') as f:
             f.write(str(e_list))
 
-        with open(f'{path}/ciphertext_en.txt', 'w') as f:
+        with open(result_dir / 'ciphertext_en.txt', 'w') as f:
             f.write(str(e_n))
 
-        i += 1
 
 if __name__ == '__main__':
     main()
