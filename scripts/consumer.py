@@ -1,5 +1,9 @@
 import sys,os
 sys.path.append(os.getcwd())
+import glob
+from pathlib import Path
+import datetime
+import shutil
 
 from hashlib import sha3_256
 import hashlib
@@ -15,7 +19,8 @@ from config import *
 
 TEST_N = 1
 
-path=r'.\data\txt'
+data_path=Path('./data/txt')
+
 
 class data_encoding():
     def __init__(self):
@@ -68,15 +73,18 @@ class data_encoding():
 def main():
     data_encoing = data_encoding()
 
-    i = 0
-
-    plainTextList = []
+    txt_files = glob.iglob(os.path.join(data_path /'**'))
     
-    while i < TEST_N:
-        with open(f'{path}/ciphertext_epolys.txt', 'r') as f:
+    plainTextList = []
+
+    for file_path in txt_files:
+        print(file_path)
+        file_path = Path(file_path)
+
+        with open(file_path / 'ciphertext_epolys.txt', 'r') as f:
             sm = eval(f.read())
 
-        with open(f'{path}/ciphertext_en.txt', 'r') as f:
+        with open(file_path / 'ciphertext_en.txt', 'r') as f:
             n = int(f.read())
         
         # decrypto
@@ -86,7 +94,7 @@ def main():
         plainText = data_encoing.ntruDecrypt(cipher, n)
         plainTextList.append([plainText.encode('utf-8')])
 
-        with open(f'{path}/result_plaintext.txt', 'w') as f:
+        with open(file_path / 'result_plaintext.txt', 'w') as f:
             f.write(str(plainTextList))
     
         # verify
@@ -94,13 +102,13 @@ def main():
         h_o = sha3_256()
         h_o.update(plainTextList[0][0])
         h_byt = h_o.digest()
-        with open(f'{path}/signature.txt', 'r') as f:
+        with open(file_path / 'signature.txt', 'r') as f:
             s_byt = eval(f.read())
 
         v_bool = data_encoing.CFPK.verify(h_byt, s_byt)
 
         print(v_bool)
-        i += 1
+        plainTextList = []
 
 if __name__ == '__main__':
     main()
