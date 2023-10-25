@@ -8,7 +8,7 @@ import functools
 
 
 def cyclic_convolution(F, G, n):
-    print(f'G_type: {type(G)}, F_type: {type(F)}, F: {F}, G:, {G}')
+    # print(f'G_type: {type(G)}, F_type: {type(F)}, F: {F}, G:, {G}')
     result = F.multiply(G)
     t = Zx([])
     t.coeffs = [0]*n
