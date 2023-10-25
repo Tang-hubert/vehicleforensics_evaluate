@@ -15,11 +15,10 @@ from ntru_utils.Polynomial import Zx
 from ntru_utils.num_to_polynomial import *
 
 from config import *
+import time
 
 
-TEST_N = 1
-
-data_path=Path('./data/txt')
+data_path=Path('./data/Encrypt')
 
 
 class data_encoding():
@@ -78,7 +77,7 @@ def main():
     plainTextList = []
 
     for file_path in txt_files:
-        print(file_path)
+        start_time = time.time()
         file_path = Path(file_path)
 
         with open(file_path / 'ciphertext_epolys.txt', 'r') as f:
@@ -95,7 +94,7 @@ def main():
         plainTextList.append([plainText.encode('utf-8')])
 
         with open(file_path / 'result_plaintext.txt', 'w') as f:
-            f.write(str(plainTextList))
+            f.write(str(plainTextList[0][0]))
     
         # verify
         # hash
@@ -110,5 +109,9 @@ def main():
         print(v_bool)
         plainTextList = []
 
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print("Execution time: {:.2f} seconds".format(execution_time))
+        
 if __name__ == '__main__':
     main()
