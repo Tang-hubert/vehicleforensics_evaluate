@@ -15,9 +15,10 @@ from ntru_utils.Polynomial import Zx
 from ntru_utils.num_to_polynomial import *
 
 from config import * 
+import time
 
 
-data_path=Path('./data/txt')
+data_path=Path('./data/')
 
 
 class data_encoding():
@@ -75,9 +76,9 @@ def main():
     txt_files = glob.iglob(os.path.join(txt_path / '*.txt'))
 
     for file_path in txt_files:
-        print(file_path)
-        result_dir = Path(data_path, datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S.%f"))
-        print(result_dir)
+        start_time = time.time()
+
+        result_dir = Path(data_path, 'Encrypt', datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S.%f"))
         result_dir.mkdir(parents=True, exist_ok=True)
 
         with open(file_path, 'r') as f: # 純str
@@ -112,6 +113,10 @@ def main():
 
         with open(result_dir / 'ciphertext_en.txt', 'w') as f:
             f.write(str(e_n))
+        
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print("Execution time: {:.2f} seconds".format(execution_time))
 
 
 if __name__ == '__main__':
