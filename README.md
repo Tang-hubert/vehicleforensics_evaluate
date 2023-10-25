@@ -21,3 +21,13 @@
 1. add logging library to replace print... and record the result.(using `from absl import logging`)
 1. add a for loop for glob
 1. remove processed file. (os.remove(file_path))
+
+## DKW
+1. Maximum characters:
+    ```bash
+    000007DF  8  02 01 05 00 00 00 00 00  53          2023-08-31 15:52:56 
+000007E8  8  03 41 05 88 00 00 00 00  53          2023-08-31 15:52:56 
+000007DF  8  02 01 10 00 00 00 00 00  154          2023-08-31 15:52:57 
+000007E8  8  04 41 10 04 60 00 00 00  154          2023-08-31 15:52:57 ```
+    hash output error: `Squared norm of signature is too large: *********`
+    encrypt output error: `except: -1`
