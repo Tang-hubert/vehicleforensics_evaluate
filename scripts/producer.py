@@ -73,6 +73,7 @@ def main():
     data_encoing = data_encoding()
 
     txt_path = data_path / 'text'
+
     txt_files = glob.iglob(os.path.join(txt_path / '*.txt'))
 
     for file_path in txt_files:
@@ -81,7 +82,7 @@ def main():
         result_dir = Path(data_path, 'Encrypt', datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S.%f"))
         result_dir.mkdir(parents=True, exist_ok=True)
 
-        with open(file_path, 'r') as f: # 純str
+        with open(file_path, 'r') as f:
             m_str = f.read()
 
         m_byt = m_str.encode()
@@ -93,31 +94,27 @@ def main():
 
         # sign
         s_byt = data_encoing.CFSK.sign(h_byt)
-
-        # os.remove(file_path)
-
         with open(result_dir / 'signature.txt', 'w') as f:
             f.write(str(s_byt))
 
+        # os.remove(file_path)
+
         # encrypt
         e_polys, e_n = data_encoing.ntruEncrypt(m_str)
-
-
         e_list = []
         for e_poly in e_polys:
             e_list.append(e_poly.coeffs)
-
 
         with open(result_dir / 'ciphertext_epolys.txt', 'w') as f:
             f.write(str(e_list))
 
         with open(result_dir / 'ciphertext_en.txt', 'w') as f:
             f.write(str(e_n))
-        
+
+
         end_time = time.time()
         execution_time = end_time - start_time
         print("Execution time: {:.2f} seconds".format(execution_time))
-
 
 if __name__ == '__main__':
     main()

@@ -95,9 +95,9 @@ def main():
 
         with open(file_path / 'result_plaintext.txt', 'w') as f:
             f.write(str(plainTextList[0][0]))
-    
-        # verify
-        # hash
+        print(str(plainTextList[0][0]))
+
+        # verify hash
         h_o = sha3_256()
         h_o.update(plainTextList[0][0])
         h_byt = h_o.digest()
@@ -105,13 +105,13 @@ def main():
             s_byt = eval(f.read())
 
         v_bool = data_encoing.CFPK.verify(h_byt, s_byt)
-
         print(v_bool)
+
         plainTextList = []
 
         end_time = time.time()
         execution_time = end_time - start_time
         print("Execution time: {:.2f} seconds".format(execution_time))
-        
+
 if __name__ == '__main__':
     main()
