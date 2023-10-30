@@ -30,6 +30,8 @@
     000007DF  8  02 01 10 00 00 00 00 00  154          2023-08-31 15:52:57 
     000007E8  8  04 41 10 04 60 00 00 00  154          2023-08-31 15:52:57 
     ```
-    
+    - Hash + Encrpyt + Save/Load_file: Execution time: 0.20 seconds (On Raspberry pi)
+    - Decrpyt + Verify + Save/Load_file: Execution time: 0.26 seconds (On Server)
+
     hash output error: `Squared norm of signature is too large: *********`\n
     encrypt output error: `except: -1`
