@@ -33,5 +33,5 @@
     - Hash + Encrpyt + Save/Load_file: Execution time: 0.20 seconds (On Raspberry pi)
     - Decrpyt + Verify + Save/Load_file: Execution time: 0.26 seconds (On Server)
 
-    hash output error: `Squared norm of signature is too large: *********`\n
+    hash output error: `Squared norm of signature is too large: *********`__
     encrypt output error: `except: -1`
