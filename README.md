@@ -31,5 +31,5 @@
     000007E8  8  04 41 10 04 60 00 00 00  154          2023-08-31 15:52:57 
     ```
     
-    hash output error: `Squared norm of signature is too large: *********`
+    hash output error: `Squared norm of signature is too large: *********`\n
     encrypt output error: `except: -1`
