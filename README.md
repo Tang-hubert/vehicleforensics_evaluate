@@ -12,11 +12,11 @@
 
 ## TO DO
 1. Verify the signature.
-> 5/20 complete
+    > 5/20 complete
 1. add feature for automatically reading mutiple data.
-> 10/17 done
+    > 10/17 done
 1. seperate different txt files into different folders(categories)
-> 10/17 done
+    > 10/17 done
 1. sort each value into a json file.(reduce the txt files and make all of the information in one)
 1. add logging library to replace print... and record the result.(using `from absl import logging`)
 1. add a for loop for glob
