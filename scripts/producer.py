@@ -18,7 +18,134 @@ from config import *
 import time
 
 
+import sys
+from canlib import canlib
+import paramiko
+import shutil
+
 data_path=Path('./data/')
+
+class sftp_connect():
+    def __init__(self):
+        self.local_dir_path = r"C:\Users\BKMY\Desktop\raw_data\vehicleforensics_evaluate-master\data\Encrypt"
+        self.remote_dir_path = '/home/project/vehicle/raw_data/'  
+
+        self.ssh_client = paramiko.SSHClient()
+        self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self.ssh_client.connect(HOSTNAME,1090, USERNAME, PASSWORD)
+
+        # 建立SFTP客戶端
+        self.sftp_client = self.ssh_client.open_sftp()
+
+    def sftp(self):
+        try:
+            with self.ssh_client.open_sftp() as sftp:
+                if not os.path.exists(self.local_dir_path):
+                    print("本地端檔案不存在！")
+                    return
+
+                try:
+                    sftp.stat(self.remote_dir_path)
+                except IOError:
+                    sftp.mkdir(self.remote_dir_path)
+
+            # 將本地端檔案上傳到SFTP伺服器
+            for root, dirs, files in os.walk(self.local_dir_path):
+                # 上传当前目录下的文件
+                for file in files:
+                    local_file_path = os.path.join(root, file)
+                    # 使用 os.path.relpath 获取相对路径，然后添加到远程目录中
+                    relative_path = os.path.relpath(local_file_path, self.local_dir_path)
+                    remote_file_path = os.path.join(self.remote_dir_path, relative_path).replace("\\", "/")
+                    self.sftp_client.put(local_file_path, remote_file_path)
+
+                # 上传当前目录
+                for dir_ in dirs:
+                    local_dir = os.path.join(root, dir_)
+                    # 使用 os.path.relpath 获取相对路径，然后添加到远程目录中
+                    relative_path = os.path.relpath(local_dir, self.local_dir_path)
+                    remote_dir = os.path.join(self.remote_dir_path, relative_path).replace("\\", "/")
+
+                    try:
+                        # 尝试创建远程目录，如果已存在则会抛出异常，忽略即可
+                        self.sftp_client.mkdir(remote_dir)
+                    except IOError:
+                        pass
+            print("-----上傳檔案成功!-----")
+
+        except Exception as e:
+            print("上傳檔案時發生錯誤: ", e)
+        finally:
+            # shutil.rmtree(local_dir_path)  
+            # os.mkdir(local_dir_path)  
+            # 關閉SFTP連線
+            self.sftp_client.close()
+
+            # end_time = time.time()
+            # execution_time = end_time - start_time
+            # print("Execution time: {:.2f} seconds".format(execution_time))
+        # 關閉SSH連線
+        self.ssh_client.close()
+            
+        
+class raw_data():
+    def print_frame(frame):
+        """Prints a message to screen and logs it to the specified file"""
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S ")
+        if (frame.flags & canlib.canMSG_ERROR_FRAME != 0):
+            log_message = "***ERROR FRAME RECEIVED***"
+        else:
+            # log_message = "{id:0>8X}  {dlc}  {data}  {timestamp}          {current_time}".format(
+            log_message = "{id:0>8X}  {dlc}  {data}".format(
+                id=frame.id,
+                dlc=frame.dlc,
+                data=' '.join('%02x' % i for i in frame.data),
+                # timestamp=frame.timestamp,
+                # current_time=current_time
+            )
+        log_message = log_message.upper()
+        print(log_message)
+        encrypt_(log_message)
+        sftp_connect()
+        time.sleep(1)
+
+    def __init__(self):
+        # start_time = time.time()
+
+        # Initialization
+        channel_number = 0
+
+        # Specific CANlib channel number may be specified as the first argument
+        if len(sys.argv) == 2:
+            channel_number = int(sys.argv[1])
+
+        chdata = canlib.ChannelData(channel_number)
+        print("%d. %s (%s / %s)" % (channel_number, chdata.channel_name,
+                                    chdata.card_upc_no,
+                                    chdata.card_serial_no))
+
+        # Open CAN channel, virtual channels are considered okay to use
+        ch = canlib.openChannel(channel_number, canlib.canOPEN_ACCEPT_VIRTUAL)
+
+        print("Setting bitrate to 500 kb/s")
+        ch.setBusParams(canlib.canBITRATE_500K)
+        ch.busOn()
+
+        # Start listening for messages
+        finished = False
+        while not finished:
+            try:
+                frame = ch.read(timeout=50)
+                raw_data.print_frame(frame)
+            except (canlib.canNoMsg):
+                pass
+            except (canlib.canError) as ex:
+                print(ex)
+                finished = True
+
+        # Channel teardown
+        ch.busOff()
+        ch.close()
 
 
 class data_encoding():
@@ -36,7 +163,6 @@ class data_encoding():
             message, N_elliptic_a, N_elliptic_b)
         return characterPolynomials, N
 
-
     def ntruEncrypt(self, message):
         # print(f"{type(message)} -> {message}")
         characterPolynomials, N = self.ntruTrans(message)
@@ -45,7 +171,6 @@ class data_encoding():
             cipher_text = encrypt(element, self.SNPK, N_D, N, N_Q)
             cipher_polys.append(cipher_text)
         return cipher_polys, N
-
 
     def ntruDecrypt(self, cipherPolys, n):
         dec_w = []
@@ -68,53 +193,41 @@ class data_encoding():
         )
         return self.salt + key   
 
-
-def main():
+def encrypt_(log_msg):
     data_encoing = data_encoding()
 
-    txt_path = data_path / 'text'
+    result_dir = Path(data_path, 'Encrypt', datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S.%f"))
+    result_dir.mkdir(parents=True, exist_ok=True)
 
-    txt_files = glob.iglob(os.path.join(txt_path / '*.txt'))
+    m_str = log_msg
+    m_byt = m_str.encode()
 
-    for file_path in txt_files:
-        start_time = time.time()
+    # hash
+    h_o = sha3_256()
+    h_o.update(m_byt)
+    h_byt = h_o.digest()
 
-        result_dir = Path(data_path, 'Encrypt', datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S.%f"))
-        result_dir.mkdir(parents=True, exist_ok=True)
+    # sign
+    s_byt = data_encoing.CFSK.sign(h_byt)
+    with open(result_dir / 'signature.txt', 'w') as f:
+        f.write(str(s_byt))
 
-        with open(file_path, 'r') as f:
-            m_str = f.read()
+    # os.remove(file_path)
 
-        m_byt = m_str.encode()
+    # encrypt
+    e_polys, e_n = data_encoing.ntruEncrypt(m_str)
+    e_list = []
+    for e_poly in e_polys:
+        e_list.append(e_poly.coeffs)
 
-        # hash
-        h_o = sha3_256()
-        h_o.update(m_byt)
-        h_byt = h_o.digest()
+    with open(result_dir / 'ciphertext_epolys.txt', 'w') as f:
+        f.write(str(e_list))
 
-        # sign
-        s_byt = data_encoing.CFSK.sign(h_byt)
-        with open(result_dir / 'signature.txt', 'w') as f:
-            f.write(str(s_byt))
+    with open(result_dir / 'ciphertext_en.txt', 'w') as f:
+        f.write(str(e_n))
 
-        # os.remove(file_path)
-
-        # encrypt
-        e_polys, e_n = data_encoing.ntruEncrypt(m_str)
-        e_list = []
-        for e_poly in e_polys:
-            e_list.append(e_poly.coeffs)
-
-        with open(result_dir / 'ciphertext_epolys.txt', 'w') as f:
-            f.write(str(e_list))
-
-        with open(result_dir / 'ciphertext_en.txt', 'w') as f:
-            f.write(str(e_n))
-
-
-        end_time = time.time()
-        execution_time = end_time - start_time
-        print("Execution time: {:.2f} seconds".format(execution_time))
+def main():
+    raw_data()
 
 if __name__ == '__main__':
     main()
