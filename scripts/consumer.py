@@ -94,6 +94,7 @@ def main():
         plainTextList.append([plainText.encode('utf-8')])
 
         with open(file_path / 'result_plaintext.txt', 'w') as f:
+            # TODO have to lower() {data} part
             f.write(str(plainTextList[0][0]))
         print(str(plainTextList[0][0]))
 
