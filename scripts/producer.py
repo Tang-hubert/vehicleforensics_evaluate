@@ -17,7 +17,6 @@ from ntru_utils.num_to_polynomial import *
 from config import * 
 import time
 
-
 import sys
 from canlib import canlib
 import paramiko
@@ -74,47 +73,28 @@ class sftp_connect():
             print("-----上傳檔案成功!-----")
 
         except Exception as e:
-            print("上傳檔案時發生錯誤: ", e)
+            print("upload error: ", e)
         finally:
-            # shutil.rmtree(local_dir_path)  
-            # os.mkdir(local_dir_path)  
+            # delete files in local_dir_path
+            shutil.rmtree(self.local_dir_path)  
+            os.mkdir(self.local_dir_path)  
             # 關閉SFTP連線
             self.sftp_client.close()
 
-            # end_time = time.time()
-            # execution_time = end_time - start_time
-            # print("Execution time: {:.2f} seconds".format(execution_time))
         # 關閉SSH連線
         self.ssh_client.close()
-            
-        
-class raw_data():
-    def print_frame(frame):
-        """Prints a message to screen and logs it to the specified file"""
-        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S ")
-        if (frame.flags & canlib.canMSG_ERROR_FRAME != 0):
-            log_message = "***ERROR FRAME RECEIVED***"
-        else:
-            # log_message = "{id:0>8X}  {dlc}  {data}  {timestamp}          {current_time}".format(
-            log_message = "{id:0>8X}  {dlc}  {data}".format(
-                id=frame.id,
-                dlc=frame.dlc,
-                data=' '.join('%02x' % i for i in frame.data),
-                # timestamp=frame.timestamp,
-                # current_time=current_time
-            )
-        log_message = log_message.upper()
-        print(log_message)
-        encrypt_(log_message)
-        sftp_connect()
-        time.sleep(1)
 
+
+class raw_data():
     def __init__(self):
         # start_time = time.time()
 
         # Initialization
-        channel_number = 0
+        self.channel_number = 0
 
+        self.get_chdata()
+
+    def get_chdata(self):
         # Specific CANlib channel number may be specified as the first argument
         if len(sys.argv) == 2:
             channel_number = int(sys.argv[1])
@@ -136,7 +116,7 @@ class raw_data():
         while not finished:
             try:
                 frame = ch.read(timeout=50)
-                raw_data.print_frame(frame)
+                self.print_frame(frame)
             except (canlib.canNoMsg):
                 pass
             except (canlib.canError) as ex:
@@ -146,6 +126,34 @@ class raw_data():
         # Channel teardown
         ch.busOff()
         ch.close()
+
+    def print_frame(frame):
+        """Prints a message to screen and logs it to the specified file"""
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S.%f")
+        if (frame.flags & canlib.canMSG_ERROR_FRAME != 0):
+            log_message = "***ERROR FRAME RECEIVED***"
+        else:
+            # log_message = "{id:0>8X}  {dlc}  {data}  {timestamp}          {current_time}".format(
+            log_message = "{id:0>8X}  {dlc}  {data}  {current_time}".format(
+                id=frame.id,
+                dlc=frame.dlc,
+                data=' '.join('%02x' % i for i in frame.data),
+                # timestamp=frame.timestamp,
+                current_time=current_time
+            )
+        log_message = log_message.upper()
+        print(log_message)
+
+        Signature_Encryption.sign_encrypt(log_message)
+
+        sftp_connect()
+ 
+        # Calculate run time
+        # end_time = time.time()
+        # execution_time = end_time - start_time
+        # print("Execution time: {:.2f} seconds".format(execution_time))
+ 
+        time.sleep(1)
 
 
 class data_encoding():
@@ -193,41 +201,45 @@ class data_encoding():
         )
         return self.salt + key   
 
-def encrypt_(log_msg):
-    data_encoing = data_encoding()
 
-    result_dir = Path(data_path, 'Encrypt', datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S.%f"))
-    result_dir.mkdir(parents=True, exist_ok=True)
+class Signature_Encryption():
+    def __init__(self, log_msg) -> None:
+        self.data_encoing = data_encoding()
+        self.result_dir = Path(data_path, 'Encrypt', datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S.%f"))
+        self.log_msg = log_msg
 
-    m_str = log_msg
-    m_byt = m_str.encode()
+    def sign_encrypt(self):
+        self.result_dir.mkdir(parents=True, exist_ok=True)
 
-    # hash
-    h_o = sha3_256()
-    h_o.update(m_byt)
-    h_byt = h_o.digest()
+        self.message_str = self.log_msg
+        self.message_byt = self.message_str.encode()
 
-    # sign
-    s_byt = data_encoing.CFSK.sign(h_byt)
-    with open(result_dir / 'signature.txt', 'w') as f:
-        f.write(str(s_byt))
+        # hash
+        h_o = sha3_256()
+        h_o.update(self.message_byt)
+        h_byt = h_o.digest()
 
-    # os.remove(file_path)
+        # sign
+        s_byt = self.data_encoing.CFSK.sign(h_byt)
+        with open(self.result_dir / 'signature.txt', 'w') as f:
+            f.write(str(s_byt))
 
-    # encrypt
-    e_polys, e_n = data_encoing.ntruEncrypt(m_str)
-    e_list = []
-    for e_poly in e_polys:
-        e_list.append(e_poly.coeffs)
+        # encrypt
+        e_polys, e_n = self.data_encoing.ntruEncrypt(self.message_str)
+        e_list = []
+        for e_poly in e_polys:
+            e_list.append(e_poly.coeffs)
 
-    with open(result_dir / 'ciphertext_epolys.txt', 'w') as f:
-        f.write(str(e_list))
+        with open(self.result_dir / 'ciphertext_epolys.txt', 'w') as f:
+            f.write(str(e_list))
 
-    with open(result_dir / 'ciphertext_en.txt', 'w') as f:
-        f.write(str(e_n))
+        with open(self.result_dir / 'ciphertext_en.txt', 'w') as f:
+            f.write(str(e_n))
+
 
 def main():
     raw_data()
+
 
 if __name__ == '__main__':
     main()
