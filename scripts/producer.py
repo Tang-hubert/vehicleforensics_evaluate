@@ -22,8 +22,6 @@ from canlib import canlib
 import paramiko
 import shutil
 
-data_path=Path('./data/')
-
 class sftp_connect():
     def __init__(self):
         self.local_dir_path = r"C:\Users\BKMY\Desktop\raw_data\vehicleforensics_evaluate-master\data\Encrypt"
@@ -156,6 +154,43 @@ class raw_data():
         time.sleep(1)
 
 
+class Signature_Encryption():
+    def __init__(self, log_msg) -> None:
+        data_path = Path('./data/')
+        self.data_encoing = data_encoding()
+        self.result_dir = Path(data_path, 'Encrypt', datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S.%f"))
+        self.log_msg = log_msg
+
+
+    def sign_encrypt(self):
+        self.result_dir.mkdir(parents=True, exist_ok=True)
+
+        self.message_str = self.log_msg
+        self.message_byt = self.message_str.encode()
+
+        # hash
+        h_o = sha3_256()
+        h_o.update(self.message_byt)
+        h_byt = h_o.digest()
+
+        # sign
+        s_byt = self.data_encoing.CFSK.sign(h_byt)
+        with open(self.result_dir / 'signature.txt', 'w') as f:
+            f.write(str(s_byt))
+
+        # encrypt
+        e_polys, e_n = self.data_encoing.ntruEncrypt(self.message_str)
+        e_list = []
+        for e_poly in e_polys:
+            e_list.append(e_poly.coeffs)
+
+        with open(self.result_dir / 'ciphertext_epolys.txt', 'w') as f:
+            f.write(str(e_list))
+
+        with open(self.result_dir / 'ciphertext_en.txt', 'w') as f:
+            f.write(str(e_n))
+
+
 class data_encoding():
     def __init__(self):
         self.CFSK_f = F_f
@@ -200,41 +235,6 @@ class data_encoding():
             # dklen=128 # Get a 128 byte key
         )
         return self.salt + key   
-
-
-class Signature_Encryption():
-    def __init__(self, log_msg) -> None:
-        self.data_encoing = data_encoding()
-        self.result_dir = Path(data_path, 'Encrypt', datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S.%f"))
-        self.log_msg = log_msg
-
-    def sign_encrypt(self):
-        self.result_dir.mkdir(parents=True, exist_ok=True)
-
-        self.message_str = self.log_msg
-        self.message_byt = self.message_str.encode()
-
-        # hash
-        h_o = sha3_256()
-        h_o.update(self.message_byt)
-        h_byt = h_o.digest()
-
-        # sign
-        s_byt = self.data_encoing.CFSK.sign(h_byt)
-        with open(self.result_dir / 'signature.txt', 'w') as f:
-            f.write(str(s_byt))
-
-        # encrypt
-        e_polys, e_n = self.data_encoing.ntruEncrypt(self.message_str)
-        e_list = []
-        for e_poly in e_polys:
-            e_list.append(e_poly.coeffs)
-
-        with open(self.result_dir / 'ciphertext_epolys.txt', 'w') as f:
-            f.write(str(e_list))
-
-        with open(self.result_dir / 'ciphertext_en.txt', 'w') as f:
-            f.write(str(e_n))
 
 
 def main():
