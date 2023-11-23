@@ -31,7 +31,6 @@ class sftp_connect():
         self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.ssh_client.connect(HOSTNAME,1090, USERNAME, PASSWORD)
 
-        # 建立SFTP客戶端
         self.sftp_client = self.ssh_client.open_sftp()
 
     def sftp(self):
@@ -46,25 +45,19 @@ class sftp_connect():
                 except IOError:
                     sftp.mkdir(self.remote_dir_path)
 
-            # 將本地端檔案上傳到SFTP伺服器
             for root, dirs, files in os.walk(self.local_dir_path):
-                # 上传当前目录下的文件
                 for file in files:
                     local_file_path = os.path.join(root, file)
-                    # 使用 os.path.relpath 获取相对路径，然后添加到远程目录中
                     relative_path = os.path.relpath(local_file_path, self.local_dir_path)
                     remote_file_path = os.path.join(self.remote_dir_path, relative_path).replace("\\", "/")
                     self.sftp_client.put(local_file_path, remote_file_path)
 
-                # 上传当前目录
                 for dir_ in dirs:
                     local_dir = os.path.join(root, dir_)
-                    # 使用 os.path.relpath 获取相对路径，然后添加到远程目录中
                     relative_path = os.path.relpath(local_dir, self.local_dir_path)
                     remote_dir = os.path.join(self.remote_dir_path, relative_path).replace("\\", "/")
 
                     try:
-                        # 尝试创建远程目录，如果已存在则会抛出异常，忽略即可
                         self.sftp_client.mkdir(remote_dir)
                     except IOError:
                         pass
@@ -76,10 +69,8 @@ class sftp_connect():
             # delete files in local_dir_path
             shutil.rmtree(self.local_dir_path)  
             os.mkdir(self.local_dir_path)  
-            # 關閉SFTP連線
             self.sftp_client.close()
 
-        # 關閉SSH連線
         self.ssh_client.close()
 
 
@@ -87,7 +78,6 @@ class raw_data():
     def __init__(self):
         # start_time = time.time()
 
-        # Initialization
         self.channel_number = 0
 
         self.get_chdata()
