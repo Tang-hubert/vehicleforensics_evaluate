@@ -37,7 +37,7 @@ class sftp_connect():
         try:
             with self.ssh_client.open_sftp() as sftp:
                 if not os.path.exists(self.local_dir_path):
-                    print("本地端檔案不存在！")
+                    print("Local files not exist!")
                     return
 
                 try:
@@ -61,7 +61,7 @@ class sftp_connect():
                         self.sftp_client.mkdir(remote_dir)
                     except IOError:
                         pass
-            print("-----上傳檔案成功!-----")
+            print("-----Upload completed-----")
 
         except Exception as e:
             print("upload error: ", e)
