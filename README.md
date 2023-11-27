@@ -19,9 +19,13 @@
     1. Remember to decode the resut plaintext to get the `string` type of string.
 
 ## TO DO
-1. Install consumer
+1. Install consumer into server
+1. Seperate Falcon publicKey/privateKey and Ntru publicKey/privateKey in `producer.py` and `consumer.py`
 
-## DKW
+# Additional
+- Don't use SFTP for the value sending protocal, try to use another way like socket, HTTP....
+
+## DKW(dont know why)
 1. Maximum characters(You cannot sign or encrypt in a long string):
     ```bash
     000007DF  8  02 01 05 00 00 00 00 00  53          2023-08-31 15:52:56 
@@ -34,6 +38,3 @@
 
     For hash output error: `Squared norm of signature is too large: *********`<br />
     For encrypt output error: `except: -1`(set by programmer)
-
-# Additional
-- Don't use SFTP for the value sending protocal, try to use another way like socket, HTTP....
