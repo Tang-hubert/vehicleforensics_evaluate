@@ -1,6 +1,7 @@
 # vehicleforensics_evaluate
 
 ## Steps
+- `2023-11-12_22-56-37_log.txt` is an example of raw data.
 - Producer.py
     1. After finish cloning the repo, their are two scripts(`producer.py` & `consuner.py`) for you to run.
     1. You have to connect the data sender by using kvasar hardware to your device.
