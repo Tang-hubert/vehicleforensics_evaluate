@@ -24,7 +24,7 @@ import shutil
 
 class sftp_connect():
     def __init__(self):
-        self.local_dir_path = r"C:\Users\BKMY\Desktop\raw_data\vehicleforensics_evaluate-master\data\Encrypt"
+        self.local_dir_path = Path('./data/Encrypt')
         self.remote_dir_path = '/home/project/vehicle/raw_data/'  
 
         self.ssh_client = paramiko.SSHClient()
@@ -85,15 +85,15 @@ class raw_data():
     def get_chdata(self):
         # Specific CANlib channel number may be specified as the first argument
         if len(sys.argv) == 2:
-            channel_number = int(sys.argv[1])
+            self.channel_number = int(sys.argv[1])
 
-        chdata = canlib.ChannelData(channel_number)
-        print("%d. %s (%s / %s)" % (channel_number, chdata.channel_name,
+        chdata = canlib.ChannelData(self.channel_number)
+        print("%d. %s (%s / %s)" % (self.channel_number, chdata.channel_name,
                                     chdata.card_upc_no,
                                     chdata.card_serial_no))
 
         # Open CAN channel, virtual channels are considered okay to use
-        ch = canlib.openChannel(channel_number, canlib.canOPEN_ACCEPT_VIRTUAL)
+        ch = canlib.openChannel(self.channel_number, canlib.canOPEN_ACCEPT_VIRTUAL)
 
         print("Setting bitrate to 500 kb/s")
         ch.setBusParams(canlib.canBITRATE_500K)
@@ -115,7 +115,7 @@ class raw_data():
         ch.busOff()
         ch.close()
 
-    def print_frame(frame):
+    def print_frame(self, frame):
         """Prints a message to screen and logs it to the specified file"""
         current_time = datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S.%f")
         if (frame.flags & canlib.canMSG_ERROR_FRAME != 0):
@@ -132,10 +132,11 @@ class raw_data():
         log_message = log_message.upper()
         print(log_message)
 
-        Signature_Encryption.sign_encrypt(log_message)
+        Sign_Encrypt = Signature_Encryption(log_message)
+        Sign_Encrypt.sign_encrypt()
 
-        sftp_connect()
- 
+        connect_sftp = sftp_connect()
+        connect_sftp.sftp()
         # Calculate run time
         # end_time = time.time()
         # execution_time = end_time - start_time
@@ -145,11 +146,11 @@ class raw_data():
 
 
 class Signature_Encryption():
-    def __init__(self, log_msg) -> None:
+    def __init__(self, log_message) -> None:
         data_path = Path('./data/')
         self.data_encoing = data_encoding()
         self.result_dir = Path(data_path, 'Encrypt', datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S.%f"))
-        self.log_msg = log_msg
+        self.log_msg = log_message
 
 
     def sign_encrypt(self):
