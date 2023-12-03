@@ -25,17 +25,3 @@
 
 # Additional
 - Don't use SFTP for the value sending protocal, try to use another way like socket, HTTP....
-
-## DKW(dont know why)
-1. Maximum characters(You cannot sign or encrypt in a long string):
-    ```bash
-    000007DF  8  02 01 05 00 00 00 00 00  53          2023-08-31 15:52:56 
-    000007E8  8  03 41 05 88 00 00 00 00  53          2023-08-31 15:52:56 
-    000007DF  8  02 01 10 00 00 00 00 00  154          2023-08-31 15:52:57 
-    000007E8  8  04 41 10 04 60 00 00 00  154          2023-08-31 15:52:57 
-    ```
-    - Hash + Encrpyt + Save/Load_file: Execution time: 0.20 seconds (On Raspberry pi)
-    - Decrpyt + Verify + Save/Load_file: Execution time: 0.26 seconds (On Server)
-
-    For hash output error: `Squared norm of signature is too large: *********`<br />
-    For encrypt output error: `except: -1`(set by programmer)
