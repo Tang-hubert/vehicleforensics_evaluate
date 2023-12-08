@@ -18,7 +18,7 @@ from config import *
 import time
 
 
-data_path=Path('./data/Encrypt')
+data_path=Path('../raw_data')
 
 
 class data_encoding():
