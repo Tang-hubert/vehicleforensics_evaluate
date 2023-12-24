@@ -39,7 +39,6 @@ class sftp_connect():
                 if not os.path.exists(self.local_dir_path):
                     print("Local files not exist!")
                     return
-
                 try:
                     sftp.stat(self.remote_dir_path)
                 except IOError:
@@ -62,7 +61,6 @@ class sftp_connect():
                     except IOError:
                         pass
             print("-----Upload completed-----")
-
         except Exception as e:
             print("upload error: ", e)
         finally:
