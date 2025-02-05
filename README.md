@@ -27,4 +27,4 @@ First place in graduation exhibition at Chang Gung University.
 # Additional
 - Don't use SFTP for the value sending protocal, try to use another way like socket, HTTP....
 
-# [Fianl report](https://drive.google.com/file/d/1ACONVtEsqeBjyPMRx9NOP-cbJiZq4iTt/view?usp=sharing)
+# [Final report](https://drive.google.com/file/d/1ACONVtEsqeBjyPMRx9NOP-cbJiZq4iTt/view?usp=sharing)
